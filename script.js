@@ -1,5 +1,3 @@
-let stopChecking = false;
-
 function toggleButtons() {
   document.getElementById("check-btn").disabled = true;
   document.getElementById("stop-check-btn").disabled = false;
@@ -13,6 +11,8 @@ function copyToClipboard(containerId) {
   });
 }
 
+let stopChecking = false;
+
 document.getElementById("stop-check-btn").addEventListener("click", () => {
   stopChecking = true;
   document.getElementById("check-btn").disabled = false;
@@ -21,7 +21,6 @@ document.getElementById("stop-check-btn").addEventListener("click", () => {
 
 async function startChecking() {
   stopChecking = false;
-
   const input = document.getElementById("numbers").value.trim();
   const cards = input.split("\n").filter(line => line.trim() !== "");
 
@@ -46,24 +45,16 @@ async function startChecking() {
     if (stopChecking) break;
 
     const card = cards[i].trim();
-    if (!card) continue;
 
     try {
-      const response = await fetch(`https://bbinl.islamraisul796.workers.dev/?cc=${encodeURIComponent(card)}`);
-      
-      // Check CORS validity first
-      if (!response.ok) throw new Error(`Server returned ${response.status}`);
-
+      const response = await fetch(`https://drlabapis.onrender.com/api/chk?cc=${encodeURIComponent(card)}`);
       const data = await response.json();
-      console.log("Response for", card, "=>", data);
 
-      const result = data?.response?.trim().toLowerCase();
-
-      if (result === "live") {
+      if (data.response === "Live") {
         liveCount++;
         liveDiv.innerHTML += `${card}<br>`;
         liveCountSpan.textContent = liveCount;
-      } else if (result === "dead") {
+      } else if (data.response === "Dead") {
         deadCount++;
         deadDiv.innerHTML += `${card}<br>`;
         deadCountSpan.textContent = deadCount;
@@ -72,19 +63,16 @@ async function startChecking() {
         unknownDiv.innerHTML += `${card}<br>`;
         unknownCountSpan.textContent = unknownCount;
       }
-
     } catch (err) {
-      console.error(`Error with card ${card}:`, err);
       unknownCount++;
       unknownDiv.innerHTML += `${card}<br>`;
       unknownCountSpan.textContent = unknownCount;
     }
 
-    // Add delay between requests (to avoid rate-limit)
-    await new Promise(resolve => setTimeout(resolve, 1000)); // 1 sec delay
+    // Optional delay between requests to avoid API rate-limiting
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
-  // Enable Start button again
   document.getElementById("check-btn").disabled = false;
   document.getElementById("stop-check-btn").disabled = true;
 }
