@@ -23,16 +23,19 @@ body {
   justify-content: center;
   align-items: flex-start; /* Align to top */
   min-height: 100vh;
+  width: 100vw; /* Viewport width */
+  overflow-x: hidden; /* Horizontal scrollbar এড়ানো */
 }
 
 .main-wrapper {
   width: 100%;
-  max-width: 900px; /* Wider to accommodate layout */
+  /* max-width: 900px; /* এই লাইনটি সরিয়ে দিন বা কমেন্ট করুন */
   background-color: var(--dark-blue);
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   padding-bottom: 20px;
+  min-height: 100vh; /* Make sure it takes full height */
 }
 
 /* Header Styling */
@@ -363,6 +366,16 @@ body {
 
 
 /* Media Queries */
+@media (min-width: 1200px) { /* Larger screens - full width with some padding */
+    .main-wrapper {
+        padding: 0 50px; /* Add some side padding for very wide screens if desired */
+    }
+    .container {
+        padding-left: 50px;
+        padding-right: 50px;
+    }
+}
+
 @media (max-width: 768px) {
   .input-output-section {
     flex-direction: column;
