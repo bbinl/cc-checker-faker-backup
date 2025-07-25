@@ -367,7 +367,7 @@ body {
 /* Media Queries */
 @media (min-width: 1200px) { /* Larger screens - full width with some padding */
     .main-wrapper {
-        padding: 0 50px; /* Add some side padding for very wide screens if desired */
+        padding: 0 0px; /* Add some side padding for very wide screens if desired */
     }
     .container {
         padding-left: 50px;
