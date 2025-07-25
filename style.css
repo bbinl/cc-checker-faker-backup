@@ -3,7 +3,7 @@
   --medium-blue: #232a41;
   --light-blue: #3e4a6e;
   --green: #4caf50;
-  --red-bin: #f44336; /* Renamed to avoid conflict with checker dead color */
+  --red-bin: #f44336; 
   --red-dead: #f44336;
   --orange-unknown: #ff9800;
   --yellow-btn: #ffc107;
@@ -29,7 +29,6 @@ body {
 
 .main-wrapper {
   width: 100%;
-  /* max-width: 900px; /* এই লাইনটি সরিয়ে দিন বা কমেন্ট করুন */
   background-color: var(--dark-blue);
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   display: flex;
@@ -81,8 +80,8 @@ body {
 }
 
 .checker-top-btn {
-  background-color: var(--green);
-  color: var(--text-color-light);
+  background-color: #05f505;
+  color: var(#0047ab);
 }
 
 .checker-top-btn:hover {
@@ -90,8 +89,8 @@ body {
 }
 
 .faker-checker-btn {
-  background-color: var(--green);
-  color: var(--text-color-light);
+  background-color: #05f505;
+  color: var(#0047ab);
 }
 
 .faker-checker-btn:hover {
