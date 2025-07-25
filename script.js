@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const data = await response.json();
 
-                let resultLine = `${card} - ${data.message || 'No message'}`;
+                let resultLine = card; // শুধুমাত্র কার্ড নম্বর দেখানোর জন্য 'No message' সরানো হয়েছে
                 
                 if (data.response === "Live") {
                     liveCount++;
@@ -121,8 +121,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Helper function to update the main status output by overwriting
     function updateStatusText(text) {
-        resultOutputTextarea.value = text;
-        resultOutputTextarea.scrollTop = resultOutputTextarea.scrollHeight; // Still scroll to bottom just in case
+        // এখানে পরিবর্তন করা হয়েছে
+        if (text.startsWith("Checking Finished!")) {
+            const parts = text.split(", ");
+            const total = parts[0].split(": ")[1];
+            const live = parts[1].split(": ")[1];
+            const dead = parts[2].split(": ")[1];
+            const unknown = parts[3].split(": ")[1];
+            resultOutputTextarea.value = `Checking Finished!\nTotal: ${total}\nLive: ${live}\nDead: ${dead}\nUnknown: ${unknown}`;
+        } else {
+            resultOutputTextarea.value = text;
+        }
+        resultOutputTextarea.scrollTop = resultOutputTextarea.scrollHeight;
     }
 
     // Helper function to append text to a specific result textarea and scroll it
